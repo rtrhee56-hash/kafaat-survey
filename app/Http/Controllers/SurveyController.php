@@ -16,6 +16,7 @@ class SurveyController extends Controller
 
     public function submit(Request $request)
     {
+        // التحقق من صحة البيانات
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'gender' => 'required|string',
@@ -25,28 +26,21 @@ class SurveyController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        try {
+        // حفظ البيانات في قاعدة البيانات
+        Survey::create([
+            'name' => $validated['name'],
+            'gender' => $validated['gender'],
+            'ratings' => json_encode($validated['ratings']),
+            'recommendation' => $validated['recommendation'],
+            'overall_rating' => $validated['overall_rating'],
+            'notes' => $validated['notes'] ?? null,
+        ]);
 
-            $survey = Survey::create([
-                'name' => $validated['name'],
-                'gender' => $validated['gender'],
-                'ratings' => json_encode($validated['ratings']),
-                'recommendation' => $validated['recommendation'],
-                'overall_rating' => $validated['overall_rating'],
-                'notes' => $validated['notes'] ?? null,
-            ]);
-
-            dd($survey);
-
-        } catch (\Exception $e) {
-
-            dd($e->getMessage());
-
-        }
-
+        // إرسال البريد الإلكتروني
         Mail::to('kafaattrainning1@gmail.com')
             ->send(new SurveySubmittedMail($validated));
 
+        // الرجوع مع رسالة نجاح
         return redirect()->back()->with('success', 'تم إرسال الاستبيان وحفظ البيانات بنجاح!');
     }
 }
