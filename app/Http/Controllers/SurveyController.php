@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SurveySubmittedMail;
-use App\Models\Survey; // تم إضافة السطر المطلوب
+use App\Models\Survey;
 
 class SurveyController extends Controller
 {
@@ -16,17 +16,21 @@ class SurveyController extends Controller
 
     public function submit(Request $request)
     {
-        // 1. التحقق من صحة البيانات
+        // التحقق من صحة البيانات
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'gender' => 'required|string',
             'ratings' => 'required|array',
             'recommendation' => 'required|string',
-            'overall_rating' => 'required|integer', 
+            'overall_rating' => 'required|integer',
             'notes' => 'nullable|string',
         ]);
 
-        // 2. الحفظ في قاعدة البيانات
+        // اختبار البيانات القادمة من الفورم
+        dd($request->all());
+
+        // سيتم تنفيذ الكود التالي بعد إزالة dd()
+
         Survey::create([
             'name' => $request->name,
             'gender' => $request->gender,
@@ -36,10 +40,9 @@ class SurveyController extends Controller
             'notes' => $request->notes,
         ]);
 
-        // 3. إرسال الإيميل
-        Mail::to('kafaattrainning1@gmail.com')->send(new SurveySubmittedMail($validated));
+        Mail::to('kafaattrainning1@gmail.com')
+            ->send(new SurveySubmittedMail($validated));
 
-        // 4. العودة برسالة نجاح
         return redirect()->back()->with('success', 'تم إرسال الاستبيان وحفظ البيانات بنجاح!');
     }
 }
