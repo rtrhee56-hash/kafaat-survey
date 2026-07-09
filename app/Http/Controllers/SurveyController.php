@@ -16,7 +16,6 @@ class SurveyController extends Controller
 
     public function submit(Request $request)
     {
-        // التحقق من صحة البيانات
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'gender' => 'required|string',
@@ -26,19 +25,24 @@ class SurveyController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        // اختبار البيانات القادمة من الفورم
-        dd($request->all());
+        try {
 
-        // سيتم تنفيذ الكود التالي بعد إزالة dd()
+            $survey = Survey::create([
+                'name' => $validated['name'],
+                'gender' => $validated['gender'],
+                'ratings' => json_encode($validated['ratings']),
+                'recommendation' => $validated['recommendation'],
+                'overall_rating' => $validated['overall_rating'],
+                'notes' => $validated['notes'] ?? null,
+            ]);
 
-        Survey::create([
-            'name' => $request->name,
-            'gender' => $request->gender,
-            'ratings' => json_encode($request->ratings),
-            'recommendation' => $request->recommendation,
-            'overall_rating' => $request->overall_rating,
-            'notes' => $request->notes,
-        ]);
+            dd($survey);
+
+        } catch (\Exception $e) {
+
+            dd($e->getMessage());
+
+        }
 
         Mail::to('kafaattrainning1@gmail.com')
             ->send(new SurveySubmittedMail($validated));
